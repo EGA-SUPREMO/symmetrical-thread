@@ -1,21 +1,27 @@
-package main;
+package malnovaĵejoj1;
 
-class Main1 {
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+public class Main {
 	
 	public static void main(String[] args) {
 		
-		Banko1 b = new Banko1();
+		Banko b = new Banko();
 		/*while(b.geti()!=1900000)
 			b.mon_transiro((byte) (Math.random()*127), (byte) (Math.random()*127));*/
 		
-		for(int i = 0; i<30; i++) {
+		for(int i = 0; i<2; i++) {
 			
-			Thread h = new Thread(new mon_transiro11(b));
+			Thread h = new Thread(new mon_transiro1(b));
 			
 			h.start();
-			System.out.println(b.geti());
+			//System.out.println(b.geti());
 			try {
-				h.join();
+				
+				if(i==1)
+					h.join();
+				
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -28,41 +34,52 @@ class Main1 {
 	
 }
 
-class Banko1 {
+class Banko {
 	
 	private final double kontj[] = new double[127];
 	private int i = 0;
+	private Lock l = new ReentrantLock();
 	
-	public Banko1() {
+	public Banko() {
 		
 		for(int i = 0; i<127;i++)
 			kontj[i] = 3000;
 		
 	}
 	
-	void mon_transiro(byte devenaK, byte destinaK, mon_transiro11 h) {
+	void mon_transiro(byte devenaK, byte destinaK, mon_transiro1 h) {
 		
 		/*if(devenaK == destinaK)
 			return;*/
 		
-		double kvanto = Math.round(Math.random() * (kontj[devenaK]));
+		l.lock();
 		
-		kontj[devenaK] -= kvanto;
-		kontj[destinaK] += kvanto;
-		i++;
-		
-		/*System.out.println("La konto " + (devenaK + 1) + " transdonis la monon al la konto " + (destinaK + 1) +
-				", la nombro estas " + kvanto + " bolivaroj.\nLa tuto estas: " + getTut() +
-				", \u011Di estas la " + (h.gethi() + 1) + "-a transdonado de " + Thread.currentThread().getName() +
-				" kaj la " + i + "-a transdonado");*/
-		
-		/*if(kontj[devenaK]==0) {
+		try {
 			
-			imprimikontn();
-			System.out.println("Bonege! la " + (devenaK + 1) + "-a konto jam estas malplenri\u0109a, Feli\u0109on al vi kaj la viaj por ke \u0109io estu la\u016D via deziro!");
-			System.exit(0);
+			double kvanto = Math.round(Math.random() * kontj[devenaK]);
 			
-		}*/
+			kontj[devenaK] -= kvanto;
+			kontj[destinaK] += kvanto;
+			i++;
+			
+			/*System.out.println("La konto " + (devenaK + 1) + " transdonis la monon al la konto " + (destinaK + 1) +
+					", la nombro estas " + kvanto + " bolivaroj.\nLa tuto estas: " + getTut() +
+					", \u011Di estas la " + (h.gethi() + 1) + "-a transdonado de " + Thread.currentThread().getName() +
+					" kaj la " + i + "-a transdonado");*/
+			
+			if(kontj[devenaK]==0) {
+				
+				imprimikontn();
+				System.out.println("Bonege! la " + (devenaK + 1) + "-a konto jam estas malplenri\u0109a, Feli\u0109on al vi kaj la viaj por ke \u0109io estu la\u016D via deziro!");
+				System.exit(0);
+				
+			}
+			
+		}finally {
+			
+			l.unlock();
+			
+		}
 		
 	}
 	
@@ -95,17 +112,17 @@ class Banko1 {
 
 	void imprimikontn() {
 		
-		byte g[] = new byte[64];
+		byte g[] = new byte[26];
 		byte ij = 0;
 		
-		byte gh[] = new byte[64];
+		byte gh[] = new byte[127];
 		byte ih = 0;
 		
-		for(byte ii= 0;ii<127;ii++) {
+		for(byte ii = 0;ii<127;ii++) {
 			
 			System.out.print("La " + (ii + 1) + "-a konto havas: " + getKontj(ii) + " bolivarojn. ");
 			
-			if(getKontj(ii)>=10000) {
+			if(getKontj(ii)>=15000) {
 				
 				g[ij] = ii;
 				ij++;
@@ -120,6 +137,20 @@ class Banko1 {
 			if(ii%2!=0)
 				System.out.println();
 			
+		}
+		
+		if(ij==0) {
+			
+			g = new byte[48];
+			
+			for(byte ii = 0;ii<127;ii++)
+				if(getKontj(ii)>=8000) {
+					
+					g[ij] = ii;
+					ij++;
+					
+			}
+		
 		}
 		
 		System.out.println("\n");
@@ -147,20 +178,21 @@ class Banko1 {
 			
 		}
 		
-		System.out.println("La lasta transdonado estas la " + i + ". Farita de: " + Thread.currentThread().getName());
+		System.out.println("La lasta transdonado estas la " + i + "-a, kaj la tuto estas: " + getTut() + ". Farita de: " +
+				Thread.currentThread().getName());
 		
 	}
 	
 }
 
-class mon_transiro11 implements Runnable {
+class mon_transiro1 implements Runnable {
 	
 	private byte devenaK;
 	private byte destinaK;
-	private static Banko1 b;
+	private static Banko b;
 	private int hi = 0;
 	
-	public mon_transiro11(Banko1 bb) {
+	public mon_transiro1(Banko bb) {
 		b = bb;
 	}
 	
